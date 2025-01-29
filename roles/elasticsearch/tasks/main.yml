@@ -43,7 +43,7 @@
 
     - name: Display elastic password
       debug:
-        msg: "Elastic user password: ||| {{ elastic_password }} |||"
+        msg: "⭐ Elastic user password: {{ elastic_password }} ⭐"
       when: elastic_install.changed
 #TASK [elasticsearch : Display full Elasticsearch installation output] ********************************************************************************
 #ok: [ns-elastic-01] => {
