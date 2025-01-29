@@ -36,11 +36,20 @@
         update_cache: yes
       register: elastic_install
 
-    - name: Display full Elasticsearch installation output
+    - name: Extract elastic password from installation output
+      set_fact:
+        elastic_password: "{{ elastic_install.stdout_lines | select('regex', 'elastic built-in superuser is :') | first | regex_replace('^.*is : (.*)$', '\\1') }}"
+      when: elastic_install.changed
+
+    - name: Display elastic password
       debug:
         msg: |
-          stdout: {{ elastic_install.stdout_lines | default([]) }}
-          stderr: {{ elastic_install.stderr_lines | default([]) }}
+          ╔════════════════════════════════════════════════════════════════╗
+          ║                   IMPORTANT SECURITY NOTICE                     ║
+          ╠════════════════════════════════════════════════════════════════╣
+          ║ Save this password! You will need it to access Elasticsearch:  ║
+          ║ elastic user password: {{ elastic_password }}              ║
+          ╚════════════════════════════════════════════════════════════════╝
       when: elastic_install.changed
 #TASK [elasticsearch : Display full Elasticsearch installation output] ********************************************************************************
 #ok: [ns-elastic-01] => {
