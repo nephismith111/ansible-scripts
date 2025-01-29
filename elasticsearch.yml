@@ -7,3 +7,29 @@
   roles:
     - elasticsearch
 
+
+
+#nsmith@ajftracerv:~/Nephi/repos/ansible-scripts$ ansible-playbook ./elasticsearch.yml --limit 'ns-elastic-01,' -K
+#BECOME password:
+#
+#PLAY [Install and configure Elasticsearch] *************************************
+#
+#TASK [Gathering Facts] *********************************************************
+#[WARNING]: Platform linux on host ns-elastic-01 is using the discovered Python
+#interpreter at /usr/bin/python3.10, but future installation of another Python
+#interpreter could change the meaning of that path. See
+#https://docs.ansible.com/ansible-
+#core/2.17/reference_appendices/interpreter_discovery.html for more information.
+#ok: [ns-elastic-01]
+#
+#TASK [elasticsearch : Add Elasticsearch GPG key] *******************************
+#changed: [ns-elastic-01]
+#
+#TASK [elasticsearch : Install apt-transport-https] *****************************
+#changed: [ns-elastic-01]
+#
+#TASK [elasticsearch : Add Elasticsearch repository] ****************************
+#fatal: [ns-elastic-01]: FAILED! => {"changed": false, "msg": "Failed to update apt cache: W:GPG error: https://artifacts.elastic.co/packages/8.x/apt stable InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY D27D666CD88E42B4, E:The repository 'https://artifacts.elastic.co/packages/8.x/apt stable InRelease' is not signed."}
+#
+#PLAY RECAP *********************************************************************
+#ns-elastic-01              : ok=3    changed=2    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0
