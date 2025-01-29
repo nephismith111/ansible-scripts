@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default configuration
-VAULT_ADDR=${VAULT_ADDR:-"https://vault.local:8200"}
+VAULT_ADDR=${VAULT_ADDR:-"https://192.168.86.21:8200"}
 PKI_ENGINE="pki-root-ca"
 ROLE_NAME="generic"
 TTL="8760h"  # 1 year
@@ -86,3 +86,36 @@ chmod 600 "$cert_dir"/*
 echo -e "${GREEN}Certificates generated successfully in $cert_dir${NC}"
 echo -e "${GREEN}Files generated:${NC}"
 ls -l "$cert_dir"
+
+
+
+#nsmith@ajftracerv:~/Nephi/repos/ansible-scripts$ ./generate-elastic-certs.sh
+#Enter the common name (e.g., ns-elastic-01.local):
+#ns-elastic-01
+#Enter a short name for the certificate type (e.g., http, transport):
+#http
+#Enter IP SANs:
+#192.18.86.30
+#192.168.86.31
+#127.0.0.1
+#
+#
+#Enter SANs:
+#localhost
+#
+#
+#Generating certificates...
+#Error writing data to pki-root-ca/issue/generic: Error making API request.
+#
+#URL: PUT https://192.168.86.21:8200/v1/pki-root-ca/issue/generic
+#Code: 400. Errors:
+#
+#* the value "\x1b[1;33mEnter values (one per line" is not a valid IP address
+#Certificates generated successfully in ./elastic-certs/ns-elastic-01
+#Files generated:
+#total 0
+#-rw------- 1 nsmith nsmith 0 Jan 29 07:31 http-ca.pem
+#-rw------- 1 nsmith nsmith 0 Jan 29 07:31 http-chain.pem
+#-rw------- 1 nsmith nsmith 0 Jan 29 07:31 http.key
+#-rw------- 1 nsmith nsmith 0 Jan 29 07:31 http.pem
+#nsmith@ajftracerv:~/Nephi/repos/ansible-scripts$
