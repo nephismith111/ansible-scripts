@@ -41,9 +41,14 @@
         enabled: yes
         state: stopped
 
-    - name: Get elastic password from installation output
+    - name: Extract elastic password from installation output
+      set_fact:
+        elastic_password: "{{ elastic_install.stderr | regex_search('The generated password for the elastic built-in superuser is : (.+)$', '\\1') | first }}"
+      when: elastic_install.changed
+
+    - name: Display elastic password
       debug:
-        msg: "Please note down the elastic password from the installation output above"
+        msg: "Elastic superuser password: {{ elastic_password }}"
       when: elastic_install.changed
   tags:
     - installation
