@@ -2,7 +2,19 @@ all:
   children:
     elasticsearch:
       vars:
+        # Cluster configuration
+        elasticsearch_cluster_name: "elastic-cluster"
+        elasticsearch_http_port: "9200"
         elasticsearch_cert_password: changeme
+        
+        # Discovery configuration
+        elasticsearch_seed_hosts: ["ns-elastic-01", "ns-elastic-02", "ns-elastic-03"]
+        elasticsearch_initial_masters: ["ns-elastic-01", "ns-elastic-02", "ns-elastic-03"]
+        
+        # Certificate paths (fixed paths, included for documentation)
+        elasticsearch_http_keystore_path: "/etc/elasticsearch/certs/http.p12"
+        elasticsearch_transport_keystore_path: "/etc/elasticsearch/certs/transport.p12"
+        elasticsearch_transport_truststore_path: "/etc/elasticsearch/certs/transport.p12"
       hosts:
         ns-elastic-01:
           ansible_host: 192.168.86.31
