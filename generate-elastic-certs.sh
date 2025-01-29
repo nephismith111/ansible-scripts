@@ -25,42 +25,77 @@ if ! command -v jq &> /dev/null; then
     exit 1
 fi
 
+# Function to validate IP address
+validate_ip() {
+    local ip=$1
+    if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        for i in {1..4}; do
+            if [ $(echo "$ip" | cut -d. -f$i) -gt 255 ]; then
+                return 1
+            fi
+        done
+        return 0
+    else
+        return 1
+    fi
+}
+
 # Function to read multi-line input
 read_multiline() {
+    local input_type=$1
     local result=""
     local line=""
-    echo -e "${YELLOW}Enter values (one per line, finish with two empty lines):${NC}"
-    while true; do
+    local empty_lines=0
+    
+    echo -e "${YELLOW}Enter values (one per line, finish with an empty line):${NC}"
+    while [ $empty_lines -lt 1 ]; do
         read -r line
+        
         if [ -z "$line" ]; then
-            if [ -z "$prev_line" ]; then
-                break
+            ((empty_lines++))
+        else
+            if [ "$input_type" = "ip" ]; then
+                if ! validate_ip "$line"; then
+                    echo -e "${RED}Invalid IP address: $line${NC}"
+                    continue
+                fi
             fi
-        fi
-        if [ -n "$line" ]; then
+            
             if [ -n "$result" ]; then
                 result="$result,$line"
             else
                 result="$line"
             fi
+            empty_lines=0
         fi
-        prev_line="$line"
     done
     echo "$result"
 }
 
 # Prompt for certificate details
-echo -e "${YELLOW}Enter the common name (e.g., ns-elastic-01.local):${NC}"
-read -r common_name
+while true; do
+    echo -e "${YELLOW}Enter the common name (e.g., ns-elastic-01.local):${NC}"
+    read -r common_name
+    if [ -n "$common_name" ]; then
+        break
+    fi
+    echo -e "${RED}Common name cannot be empty${NC}"
+done
 
-echo -e "${YELLOW}Enter a short name for the certificate type (e.g., http, transport):${NC}"
-read -r short_name
+while true; do
+    echo -e "${YELLOW}Enter a short name for the certificate type (e.g., http, transport):${NC}"
+    read -r short_name
+    if [[ "$short_name" =~ ^(http|transport)$ ]]; then
+        break
+    fi
+    echo -e "${RED}Short name must be either 'http' or 'transport'${NC}"
+done
 
 echo -e "${YELLOW}Enter IP SANs:${NC}"
-ip_sans=$(read_multiline)
+ip_sans=$(read_multiline "ip")
 
 echo -e "${YELLOW}Enter SANs:${NC}"
-sans=$(read_multiline)
+sans=$(read_multiline "dns")
 
 # Create output directories
 cert_dir="$CERTS_BASE_DIR/$common_name"
