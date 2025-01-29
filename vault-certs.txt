@@ -1,3 +1,4 @@
+# I know full well that you DO NOT commit secrets into source control; but, this is a home project and I both know how and do rotate these kinds of credentials.
 Vault Certs
 Unseal Key 1: RNuIUM2IM0Lt6wH6Rk+lfdtOCHZZD/1MYEe7TFqfblkY
 Unseal Key 2: QGj87Zk1NyAmJMMQGPTKAClBbbnw8l3UcRbJZJPxUdEZ
