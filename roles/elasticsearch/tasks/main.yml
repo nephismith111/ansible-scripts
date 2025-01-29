@@ -70,10 +70,18 @@
     - name: Comment out configuration fields we will manage
       lineinfile:
         path: /etc/elasticsearch/elasticsearch.yml
-        regexp: '^(cluster\.name:|node\.name:|network\.host:|http\.port:|discovery\.seed_hosts:|cluster\.initial_master_nodes:|transport\.host:)'
+        regexp: '^({{ item }}:)'
         backrefs: yes
         line: '#\1'
       check_mode: yes
+      loop:
+        - cluster\.name
+        - node\.name
+        - network\.host
+        - http\.port
+        - discovery\.seed_hosts
+        - cluster\.initial_master_nodes
+        - transport\.host
 
     - name: Add managed configuration block
       blockinfile:
