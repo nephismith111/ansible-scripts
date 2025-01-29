@@ -1,0 +1,30 @@
+# ======================== Elasticsearch Configuration =========================
+#
+# NOTE: Elasticsearch comes with reasonable defaults for most settings.
+#       Before you set out to tweak and tune the configuration, make sure you
+#       understand what are you trying to accomplish and the consequences.
+
+# ---------------------------------- Cluster -----------------------------------
+cluster.name: {{ elasticsearch_cluster_name | default('elastic-cluster') }}
+
+# ------------------------------------ Node ------------------------------------
+node.name: {{ inventory_hostname }}
+
+# ----------------------------------- Paths ------------------------------------
+path.data: /var/lib/elasticsearch
+path.logs: /var/log/elasticsearch
+
+# ---------------------------------- Network -----------------------------------
+network.host: {{ ansible_host }}
+http.port: {{ elasticsearch_http_port | default('9200') }}
+transport.host: 0.0.0.0
+
+# --------------------------------- Discovery ----------------------------------
+{% if elasticsearch_seed_hosts is defined %}
+discovery.seed_hosts: {{ elasticsearch_seed_hosts | to_json }}
+{% endif %}
+{% if elasticsearch_initial_masters is defined %}
+cluster.initial_master_nodes: {{ elasticsearch_initial_masters | to_json }}
+{% endif %}
+
+{{ lookup('file', '/etc/elasticsearch/elasticsearch.yml') | regex_search('#----------------------- BEGIN SECURITY AUTO CONFIGURATION.*?#----------------------- END SECURITY AUTO CONFIGURATION -------------------------', multiline=True, dotall=True) }}
