@@ -84,5 +84,26 @@
       systemd:
         name: elasticsearch
         state: stopped
+
+    - name: Update HTTP keystore path
+      lineinfile:
+        path: /etc/elasticsearch/elasticsearch.yml
+        regexp: '^xpack.security.http.ssl.keystore.path:'
+        line: 'xpack.security.http.ssl.keystore.path: {{ elasticsearch_http_keystore_path }}'
+      when: elasticsearch_http_keystore_path is defined
+
+    - name: Update transport keystore path
+      lineinfile:
+        path: /etc/elasticsearch/elasticsearch.yml
+        regexp: '^xpack.security.transport.ssl.keystore.path:'
+        line: 'xpack.security.transport.ssl.keystore.path: {{ elasticsearch_transport_keystore_path }}'
+      when: elasticsearch_transport_keystore_path is defined
+
+    - name: Update transport truststore path
+      lineinfile:
+        path: /etc/elasticsearch/elasticsearch.yml
+        regexp: '^xpack.security.transport.ssl.truststore.path:'
+        line: 'xpack.security.transport.ssl.truststore.path: {{ elasticsearch_transport_truststore_path }}'
+      when: elasticsearch_transport_truststore_path is defined
   tags:
     - rotate-certs

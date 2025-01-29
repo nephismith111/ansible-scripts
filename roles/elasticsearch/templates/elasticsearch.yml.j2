@@ -39,16 +39,14 @@ xpack.security.enabled: true
 xpack.security.enrollment.enabled: true
 
 # Enable encryption for HTTP API client connections, such as Kibana, Logstash, and Agents
-xpack.security.http.ssl:
-  enabled: true
-  keystore.path: {{ elasticsearch_http_keystore_path | default('certs/http.p12') }}
+xpack.security.http.ssl.enabled: true
+xpack.security.http.ssl.keystore.path: {{ elasticsearch_http_keystore_path | default('certs/http.p12') }}
 
 # Enable encryption and mutual authentication between cluster nodes
-xpack.security.transport.ssl:
-  enabled: true
-  verification_mode: certificate
-  keystore.path: {{ elasticsearch_transport_keystore_path | default('certs/transport.p12') }}
-  truststore.path: {{ elasticsearch_transport_truststore_path | default('certs/transport.p12') }}
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.verification_mode: certificate
+xpack.security.transport.ssl.keystore.path: {{ elasticsearch_transport_keystore_path | default('certs/transport.p12') }}
+xpack.security.transport.ssl.truststore.path: {{ elasticsearch_transport_truststore_path | default('certs/transport.p12') }}
 
 # Allow HTTP API connections from anywhere
 # Connections are encrypted and require user authentication
