@@ -1,0 +1,35 @@
+---
+- name: Unseal Vault
+  hosts: localhost
+  gather_facts: no
+  vars:
+    vault_addr: "http://localhost:8200"
+    # These would typically be stored securely and provided at runtime
+    # Only using 3 of the 5 keys needed for unsealing
+    unseal_keys:
+      - "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+      - "12345678901234567890abcdef1234567890abcdef1234567890abcdef123456"
+      - "90abcdef1234567890abcdef1234567890abcdef1234567890abcdef12345678"
+
+  tasks:
+    - name: Unseal Vault with key shares
+      uri:
+        url: "{{ vault_addr }}/v1/sys/unseal"
+        method: POST
+        body_format: json
+        body:
+          key: "{{ item }}"
+        status_code: 200
+      register: unseal_result
+      loop: "{{ unseal_keys }}"
+
+    - name: Show Vault status
+      uri:
+        url: "{{ vault_addr }}/v1/sys/seal-status"
+        method: GET
+        status_code: 200
+      register: status_result
+
+    - name: Display final unseal status
+      debug:
+        var: status_result.json
