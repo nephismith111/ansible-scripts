@@ -80,24 +80,25 @@
 
 - name: Certificate preparation tasks
   block:
-    - name: Create certificate directories
+    - name: Create staging directory
       file:
-        path: "{{ item }}"
+        path: /tmp/elastic-certs
         state: directory
         mode: '0750'
-        owner: root
-        group: elasticsearch
-      loop:
-        - /etc/elasticsearch/certs
-        - /etc/elasticsearch/certs/http
-        - /etc/elasticsearch/certs/transport
 
-    - name: Copy certificate files
+    - name: Create certificate staging subdirectories
+      file:
+        path: "/tmp/elastic-certs/{{ item }}"
+        state: directory
+        mode: '0750'
+      loop:
+        - http
+        - transport
+
+    - name: Copy certificate files to staging
       copy:
         src: "{{ inventory_hostname }}/{{ item.src }}"
-        dest: "/etc/elasticsearch/certs/{{ item.dest }}"
-        owner: root
-        group: elasticsearch
+        dest: "/tmp/elastic-certs/{{ item.dest }}"
         mode: '0640'
       loop:
         - { src: 'http.pem', dest: 'http/cert.pem' }
@@ -110,70 +111,75 @@
     - name: Create HTTP PKCS12 keystore
       shell: |
         openssl pkcs12 -export \
-          -inkey /etc/elasticsearch/certs/http/key.pem \
-          -in /etc/elasticsearch/certs/http/cert.pem \
-          -out /etc/elasticsearch/certs/http/http.p12 \
+          -inkey /tmp/elastic-certs/http/key.pem \
+          -in /tmp/elastic-certs/http/cert.pem \
+          -out /tmp/elastic-certs/http/http.p12 \
           -passout pass:{{ elasticsearch_cert_password }} \
           -name "{{ inventory_hostname }}_http"
       args:
-        creates: /etc/elasticsearch/certs/http/http.p12
+        creates: /tmp/elastic-certs/http/http.p12
 
     - name: Import HTTP CA into keystore
       shell: |
         keytool -importcert \
           -noprompt \
-          -keystore /etc/elasticsearch/certs/http/http.p12 \
+          -keystore /tmp/elastic-certs/http/http.p12 \
           -storepass {{ elasticsearch_cert_password }} \
           -alias "ca" \
-          -file /etc/elasticsearch/certs/http/ca.pem
+          -file /tmp/elastic-certs/http/ca.pem
       args:
-        creates: /etc/elasticsearch/certs/http/http.p12.imported
-      register: http_ca_import
-
-    - name: Mark HTTP CA as imported
-      file:
-        path: /etc/elasticsearch/certs/http/http.p12.imported
-        state: touch
-      when: http_ca_import.changed
+        creates: /tmp/elastic-certs/http/http.p12.imported
 
     - name: Create transport PKCS12 keystore
       shell: |
         openssl pkcs12 -export \
-          -inkey /etc/elasticsearch/certs/transport/key.pem \
-          -in /etc/elasticsearch/certs/transport/cert.pem \
-          -out /etc/elasticsearch/certs/transport/transport.p12 \
+          -inkey /tmp/elastic-certs/transport/key.pem \
+          -in /tmp/elastic-certs/transport/cert.pem \
+          -out /tmp/elastic-certs/transport/transport.p12 \
           -passout pass:{{ elasticsearch_cert_password }} \
           -name "{{ inventory_hostname }}_transport"
       args:
-        creates: /etc/elasticsearch/certs/transport/transport.p12
+        creates: /tmp/elastic-certs/transport/transport.p12
 
     - name: Import transport CA into keystore
       shell: |
         keytool -importcert \
           -noprompt \
-          -keystore /etc/elasticsearch/certs/transport/transport.p12 \
+          -keystore /tmp/elastic-certs/transport/transport.p12 \
           -storepass {{ elasticsearch_cert_password }} \
           -alias "ca" \
-          -file /etc/elasticsearch/certs/transport/ca.pem
+          -file /tmp/elastic-certs/transport/ca.pem
       args:
-        creates: /etc/elasticsearch/certs/transport/transport.p12.imported
-      register: transport_ca_import
+        creates: /tmp/elastic-certs/transport/transport.p12.imported
 
-    - name: Mark transport CA as imported
-      file:
-        path: /etc/elasticsearch/certs/transport/transport.p12.imported
-        state: touch
-      when: transport_ca_import.changed
-
-    - name: Set certificate permissions
+    - name: Ensure certificate directories exist
       file:
         path: "{{ item }}"
+        state: directory
+        mode: '0750'
+        owner: root
+        group: elasticsearch
+      loop:
+        - /etc/elasticsearch/certs
+        - /etc/elasticsearch/certs/http
+        - /etc/elasticsearch/certs/transport
+
+    - name: Copy final keystores to destination
+      copy:
+        src: "/tmp/elastic-certs/{{ item.src }}"
+        dest: "/etc/elasticsearch/certs/{{ item.dest }}"
+        remote_src: yes
         owner: root
         group: elasticsearch
         mode: '0640'
       loop:
-        - /etc/elasticsearch/certs/http/http.p12
-        - /etc/elasticsearch/certs/transport/transport.p12
+        - { src: 'http/http.p12', dest: 'http/http.p12' }
+        - { src: 'transport/transport.p12', dest: 'transport/transport.p12' }
+
+    - name: Clean up staging directory
+      file:
+        path: /tmp/elastic-certs
+        state: absent
   tags:
     - certificates
 
