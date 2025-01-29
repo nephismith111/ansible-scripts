@@ -3,7 +3,7 @@
 
 - name: Installation tasks
   block:
-    - name: Download and install Elasticsearch GPG key
+    - name: Import Elasticsearch GPG key to keyring
       shell: |
         wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
       args:
@@ -20,7 +20,7 @@
         state: present
         filename: elastic-8.x
 
-    - name: Install Elasticsearch and Kibana packages
+    - name: Install Kibana and supporting packages
       apt:
         name:
           - kibana
@@ -28,7 +28,7 @@
         state: present
         update_cache: yes
 
-    - name: Install Elasticsearch package
+    - name: Install Elasticsearch package and capture output
       apt:
         name:
           - elasticsearch
@@ -46,7 +46,7 @@
         msg: "Elastic user password: ⭐ {{ elastic_password }} ⭐"
       when: elastic_install.changed
 
-    - name: Configure Elasticsearch service state
+    - name: Enable Elasticsearch service but ensure stopped state
       systemd:
         name: elasticsearch
         enabled: yes
@@ -80,13 +80,13 @@
 
 - name: Certificate preparation tasks
   block:
-    - name: Create staging directory
+    - name: Create temporary certificate staging directory
       file:
         path: /tmp/elastic-certs
         state: directory
         mode: '0750'
 
-    - name: Copy certificate files to staging
+    - name: Stage source certificate files for conversion
       copy:
         src: "{{ inventory_hostname }}/{{ item.src }}"
         dest: "/tmp/elastic-certs/{{ item.dest }}"
@@ -151,7 +151,7 @@
         owner: root
         group: elasticsearch
 
-    - name: Copy final keystores to destination
+    - name: Install generated PKCS12 keystores
       copy:
         src: "/tmp/elastic-certs/{{ item }}"
         dest: "/etc/elasticsearch/certs/{{ item }}"
