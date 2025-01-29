@@ -1,2 +1,32 @@
 ---
 # tasks file for elasticsearch
+- name: Add Elasticsearch GPG key
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+
+- name: Install apt-transport-https
+  apt:
+    name: apt-transport-https
+    state: present
+
+- name: Add Elasticsearch repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main"
+    state: present
+    filename: elastic-8.x
+
+- name: Install Elasticsearch and Kibana packages
+  apt:
+    name: 
+      - elasticsearch
+      - kibana
+      - unzip
+    state: present
+    update_cache: yes
+
+- name: Enable Elasticsearch service
+  systemd:
+    name: elasticsearch
+    enabled: yes
+    state: started
