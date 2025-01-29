@@ -1,0 +1,64 @@
+server.port: 5601
+server.host: "192.168.86.31"
+#server.basePath: ""
+#server.rewriteBasePath: false
+server.publicBaseUrl: "https://192.168.86.31:5601"
+server.name: "ns-kibana"
+server.ssl.enabled: true
+server.ssl.certificate: /etc/kibana/certs/kibana.crt
+server.ssl.key: /etc/kibana/certs/kibana.key
+elasticsearch.hosts: ["https://192.168.86.31:9200"]
+#elasticsearch.username: "kibana_system"
+#elasticsearch.password: "pass"
+# Kibana can also authenticate to Elasticsearch via "service account tokens".
+elasticsearch.serviceAccountToken: "eyJ2ZXIiOiI4LjE0LjAiLCJhZHIiOlsiMTkyLjE2OC44Ni4zMTo5MjAwIl0sImZnciI6IjA1MjZlNTU4ZjQ3ZjY5YTk2YzdmOTM0YWRiYTBmNTA2ODAyNjBjMzQxYzg3NmZmNzVhMjE2ODc4N2FhZWVlYzUiLCJrZXkiOiIxbGVUbnBRQjZDcDBNOWNKVXlmSDp2V0FpMVd0TVR3cVlSbEVLZE1zVXJ3In0="
+# xpack.security.http.ssl.client_authentication in Elasticsearch is set to required.
+#elasticsearch.ssl.certificate: /etc/kibana/certs/kibana.crt
+#elasticsearch.ssl.key: /etc/kibana/certs/kibana.key
+
+# Enables you to specify a path to the PEM file for the certificate
+# authority for your Elasticsearch instance.
+elasticsearch.ssl.certificateAuthorities: [ "/etc/kibana/certs/elasticsearch-ca.pem" ]
+
+# To disregard the validity of SSL certificates, change this setting's value to 'none'.
+#elasticsearch.ssl.verificationMode: full
+
+xpack.encryptedSavedObjects.encryptionKey: 19662affb002d34155ef72e74a68c104
+xpack.reporting.encryptionKey: ca3e9ace2c4e6dd96e116854405a8571
+xpack.security.encryptionKey: 4eb5a4ac19612d388733deb6d05c0c24
+
+
+# =================== System: Logging ===================
+# Set the value of this setting to off to suppress all logging output, or to debug to log everything. Defaults to 'info'
+#logging.root.level: debug
+# Enables you to specify a file where Kibana stores log output.
+logging:
+  appenders:
+    file:
+      type: file
+      fileName: /var/log/kibana/kibana.log
+      layout:
+        type: json
+  root:
+    appenders:
+      - default
+      - file
+# Logs queries sent to Elasticsearch.
+#logging.loggers:
+#  - name: elasticsearch.query
+#    level: debug
+# Logs system usage information.
+#logging.loggers:
+#  - name: metrics.ops
+#    level: debug
+
+# Enables debug logging on the browser (dev console)
+#logging.browser.root:
+#  level: debug
+
+# =================== System: Other ===================
+# The path where Kibana stores persistent data not saved in Elasticsearch. Defaults to data
+#path.data: data
+
+# Specifies the path where Kibana creates the process ID file.
+pid.file: /run/kibana/kibana.pid

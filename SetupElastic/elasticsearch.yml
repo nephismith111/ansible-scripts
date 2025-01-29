@@ -1,0 +1,38 @@
+cluster.name: ns-elastic
+node.name: ns-elastic-01
+#node.attr.rack: r1
+path.data: /var/lib/elasticsearch
+path.logs: /var/log/elasticsearch
+# ----------------------------------- Memory -----------------------------------
+#bootstrap.memory_lock: true
+# ---------------------------------- Network -----------------------------------
+network.host: 192.168.86.31
+# By default Elasticsearch listens for HTTP traffic on the first free port it
+# finds starting at 9200. Set a specific HTTP port here:
+#http.port: 9200
+# --------------------------------- Discovery ----------------------------------
+#discovery.seed_hosts: ["host1", "host2"]
+#cluster.initial_master_nodes: ["node-1", "node-2"]
+# ---------------------------------- Various -----------------------------------
+#action.destructive_requires_name: false
+#----------------------- BEGIN SECURITY AUTO CONFIGURATION -----------------------
+# Enable security features
+xpack.security.enabled: true
+xpack.security.enrollment.enabled: true
+xpack.security.http.ssl:
+  enabled: true
+  keystore.path: /etc/elasticsearch/certs/http.p12
+
+# Enable encryption and mutual authentication between cluster nodes
+xpack.security.transport.ssl:
+  enabled: true
+  verification_mode: certificate
+  keystore.path: /etc/elasticsearch/certs/elastic-certificates.p12
+  truststore.path: /etc/elasticsearch/certs/elastic-stack-ca.p12
+# Additional nodes can still join the cluster later
+
+cluster.initial_master_nodes: ["ns-elastic-01"]
+
+http.host: 0.0.0.0
+#transport.host: 0.0.0.0
+#----------------------- END SECURITY AUTO CONFIGURATION -------------------------
