@@ -28,7 +28,7 @@
         state: present
         update_cache: yes
 
-    - name: Install Elasticsearch - Note the elastic user password
+    - name: Install Elasticsearch package
       apt:
         name:
           - elasticsearch
@@ -36,21 +36,18 @@
         update_cache: yes
       register: elastic_install
 
-    - name: Enable Elasticsearch service
+    - name: Display full Elasticsearch installation output
+      debug:
+        msg: |
+          stdout: {{ elastic_install.stdout_lines | default([]) }}
+          stderr: {{ elastic_install.stderr_lines | default([]) }}
+      when: elastic_install.changed
+
+    - name: Configure Elasticsearch service state
       systemd:
         name: elasticsearch
         enabled: yes
         state: stopped
-
-    - name: Extract elastic password from installation output
-      set_fact:
-        elastic_password: "{{ elastic_install.stderr | regex_search('The generated password for the elastic built-in superuser is : (.+)$', '\\1') | first }}"
-      when: elastic_install.changed
-
-    - name: Display elastic password
-      debug:
-        msg: "Elastic superuser password: {{ elastic_password }}"
-      when: elastic_install.changed
   tags:
     - installation
 
