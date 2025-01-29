@@ -10,9 +10,16 @@ cluster.name: {{ elasticsearch_cluster_name | default('elastic-cluster') }}
 # ------------------------------------ Node ------------------------------------
 node.name: {{ inventory_hostname }}
 
+# Add custom attributes to the node:
+#node.attr.rack: r1
+
 # ----------------------------------- Paths ------------------------------------
 path.data: /var/lib/elasticsearch
 path.logs: /var/log/elasticsearch
+
+# ----------------------------------- Memory -----------------------------------
+# Lock the memory on startup:
+bootstrap.memory_lock: true
 
 # ---------------------------------- Network -----------------------------------
 network.host: {{ ansible_host }}
@@ -27,4 +34,30 @@ discovery.seed_hosts: {{ elasticsearch_seed_hosts | to_json }}
 cluster.initial_master_nodes: {{ elasticsearch_initial_masters | to_json }}
 {% endif %}
 
-{{ lookup('file', '/etc/elasticsearch/elasticsearch.yml') | regex_search('#----------------------- BEGIN SECURITY AUTO CONFIGURATION.*?#----------------------- END SECURITY AUTO CONFIGURATION -------------------------', multiline=True, dotall=True) }}
+# ---------------------------------- Security ----------------------------------
+xpack.security.enabled: true
+xpack.security.enrollment.enabled: true
+
+# Enable encryption for HTTP API client connections, such as Kibana, Logstash, and Agents
+xpack.security.http.ssl:
+  enabled: true
+  keystore.path: {{ elasticsearch_http_keystore_path | default('certs/http.p12') }}
+
+# Enable encryption and mutual authentication between cluster nodes
+xpack.security.transport.ssl:
+  enabled: true
+  verification_mode: certificate
+  keystore.path: {{ elasticsearch_transport_keystore_path | default('certs/transport.p12') }}
+  truststore.path: {{ elasticsearch_transport_truststore_path | default('certs/transport.p12') }}
+
+# Allow HTTP API connections from anywhere
+# Connections are encrypted and require user authentication
+http.host: 0.0.0.0
+
+# ---------------------------------- Various ----------------------------------
+# Require explicit names when deleting indices:
+action.destructive_requires_name: true
+
+{% if security_auto_config is defined %}
+{{ security_auto_config }}
+{% endif %}

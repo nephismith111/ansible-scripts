@@ -5,6 +5,12 @@
 elasticsearch_cluster_name: "elastic-cluster"
 elasticsearch_http_port: "9200"
 
+# Security configuration
+elasticsearch_http_keystore_path: "certs/http.p12"
+elasticsearch_transport_keystore_path: "certs/transport.p12"
+elasticsearch_transport_truststore_path: "certs/transport.p12"
+
 # Optional configuration
 # elasticsearch_seed_hosts: ["host1", "host2"]
 # elasticsearch_initial_masters: ["master1", "master2"]
+# security_auto_config: "" # Content from auto-generated security configuration
