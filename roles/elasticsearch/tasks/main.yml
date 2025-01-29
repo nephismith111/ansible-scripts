@@ -21,10 +21,16 @@
 
     - name: Install Elasticsearch and Kibana packages
       apt:
-        name: 
-          - elasticsearch
+        name:
           - kibana
           - unzip
+        state: present
+        update_cache: yes
+
+    - name: Install Elasticsearch - Note the elastic user password
+      apt:
+        name:
+          - elasticsearch
         state: present
         update_cache: yes
       register: elastic_install
