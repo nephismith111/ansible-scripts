@@ -201,3 +201,37 @@ ls -l "$cert_dir"
 #-rw------- 1 nsmith nsmith 0 Jan 29 07:33 http.key
 #-rw------- 1 nsmith nsmith 0 Jan 29 07:33 http.pem
 #nsmith@ajftracerv:~/Nephi/repos/ansible-scripts$
+
+
+
+## Attempt 3
+#nsmith@ajftracerv:~/Nephi/repos/ansible-scripts$ ./generate-elastic-certs.sh
+#Enter the common name (e.g., ns-elastic-01.local):
+#ns-elastic-01
+#Enter a short name for the certificate type (e.g., http, transport):
+#http
+#Enter IP SANs:
+#192.168.86.30
+#192.168.86.31
+#127.0.0.1
+#
+#Enter SANs:
+#localhost
+#
+#Generating certificates...
+#Executing Vault command:
+#vault write -format=json pki-root-ca/issue/generic \
+#    common_name="ns-elastic-01" \
+#    alt_names="Enter values (one per line, finish with an empty line):
+#localhost" \
+#    ip_sans="Enter values (one per line, finish with an empty line):
+#192.168.86.30,192.168.86.31,127.0.0.1" \
+#    ttl="8760h"
+#Error writing data to pki-root-ca/issue/generic: Error making API request.
+#
+#URL: PUT https://192.168.86.21:8200/v1/pki-root-ca/issue/generic
+#Code: 400. Errors:
+#
+#* the value "\x1b[1;33mEnter values (one per line" is not a valid IP address
+#Certificate generation failed
+#nsmith@ajftracerv:~/Nephi/repos/ansible-scripts$
