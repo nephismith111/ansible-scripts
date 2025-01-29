@@ -45,8 +45,13 @@ read_multiline() {
     local input_type=$1
     local result=""
     local line=""
+    local prompt_msg="Enter values (one per line, finish with an empty line):"
     
-    echo -e "${YELLOW}Enter values (one per line, finish with an empty line):${NC}"
+    echo -e "${YELLOW}${prompt_msg}${NC}"
+    
+    # Clear any pending input
+    while read -t 0; do read -r; done
+    
     while true; do
         read -r line
         
@@ -71,7 +76,8 @@ read_multiline() {
         fi
     done
     
-    echo "$result"
+    # Return the raw result without any prompt text
+    printf "%s" "$result"
 }
 
 # Prompt for certificate details
