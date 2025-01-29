@@ -66,6 +66,32 @@
       systemd:
         name: elasticsearch
         state: stopped
+
+    - name: Comment out configuration fields we will manage
+      lineinfile:
+        path: /etc/elasticsearch/elasticsearch.yml
+        regexp: '^(cluster\.name:|node\.name:|network\.host:|http\.port:|discovery\.seed_hosts:|cluster\.initial_master_nodes:|transport\.host:)'
+        backrefs: yes
+        line: '#\1'
+      check_mode: yes
+
+    - name: Add managed configuration block
+      blockinfile:
+        path: /etc/elasticsearch/elasticsearch.yml
+        marker: "# {mark} ANSIBLE MANAGED BLOCK"
+        block: |
+          # Managed Configuration
+          cluster.name: {{ elasticsearch_cluster_name | default('elastic-cluster') }}
+          node.name: {{ inventory_hostname }}
+          network.host: {{ ansible_host }}
+          http.port: {{ elasticsearch_http_port | default('9200') }}
+          transport.host: 0.0.0.0
+          {% if elasticsearch_seed_hosts is defined %}
+          discovery.seed_hosts: {{ elasticsearch_seed_hosts | to_json }}
+          {% endif %}
+          {% if elasticsearch_initial_masters is defined %}
+          cluster.initial_master_nodes: {{ elasticsearch_initial_masters | to_json }}
+          {% endif %}
   tags:
     - configure
 

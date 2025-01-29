@@ -1,2 +1,10 @@
 ---
 # defaults file for elasticsearch
+
+# Cluster configuration
+elasticsearch_cluster_name: "elastic-cluster"
+elasticsearch_http_port: "9200"
+
+# Optional configuration
+# elasticsearch_seed_hosts: ["host1", "host2"]
+# elasticsearch_initial_masters: ["master1", "master2"]
