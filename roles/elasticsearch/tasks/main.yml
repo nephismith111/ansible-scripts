@@ -1,32 +1,61 @@
 ---
 # tasks file for elasticsearch
-- name: Add Elasticsearch GPG key
-  apt_key:
-    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    state: present
 
-- name: Install apt-transport-https
-  apt:
-    name: apt-transport-https
-    state: present
+- name: Installation tasks
+  block:
+    - name: Add Elasticsearch GPG key
+      apt_key:
+        url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+        state: present
 
-- name: Add Elasticsearch repository
-  apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main"
-    state: present
-    filename: elastic-8.x
+    - name: Install apt-transport-https
+      apt:
+        name: apt-transport-https
+        state: present
 
-- name: Install Elasticsearch and Kibana packages
-  apt:
-    name: 
-      - elasticsearch
-      - kibana
-      - unzip
-    state: present
-    update_cache: yes
+    - name: Add Elasticsearch repository
+      apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main"
+        state: present
+        filename: elastic-8.x
 
-- name: Enable Elasticsearch service
-  systemd:
-    name: elasticsearch
-    enabled: yes
-    state: started
+    - name: Install Elasticsearch and Kibana packages
+      apt:
+        name: 
+          - elasticsearch
+          - kibana
+          - unzip
+        state: present
+        update_cache: yes
+      register: elastic_install
+
+    - name: Enable Elasticsearch service
+      systemd:
+        name: elasticsearch
+        enabled: yes
+        state: stopped
+
+    - name: Get elastic password from installation output
+      debug:
+        msg: "Please note down the elastic password from the installation output above"
+      when: elastic_install.changed
+  tags:
+    - installation
+
+- name: Configuration tasks
+  block:
+    - name: Ensure Elasticsearch is stopped before configuration
+      systemd:
+        name: elasticsearch
+        state: stopped
+  tags:
+    - configure
+
+- name: Certificate rotation tasks
+  block:
+    - name: Ensure Elasticsearch is stopped before rotating certificates
+      systemd:
+        name: elasticsearch
+        state: stopped
+  tags:
+    - rotate-certs
