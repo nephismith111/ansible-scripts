@@ -45,30 +45,32 @@ read_multiline() {
     local input_type=$1
     local result=""
     local line=""
-    local empty_lines=0
     
     echo -e "${YELLOW}Enter values (one per line, finish with an empty line):${NC}"
-    while [ $empty_lines -lt 1 ]; do
+    while true; do
         read -r line
         
+        # Break on empty line
         if [ -z "$line" ]; then
-            ((empty_lines++))
+            break
+        fi
+        
+        # Validate input based on type
+        if [ "$input_type" = "ip" ]; then
+            if ! validate_ip "$line"; then
+                echo -e "${RED}Invalid IP address: $line${NC}"
+                continue
+            fi
+        fi
+        
+        # Add to result
+        if [ -n "$result" ]; then
+            result="$result,$line"
         else
-            if [ "$input_type" = "ip" ]; then
-                if ! validate_ip "$line"; then
-                    echo -e "${RED}Invalid IP address: $line${NC}"
-                    continue
-                fi
-            fi
-            
-            if [ -n "$result" ]; then
-                result="$result,$line"
-            else
-                result="$line"
-            fi
-            empty_lines=0
+            result="$line"
         fi
     done
+    
     echo "$result"
 }
 
@@ -103,11 +105,23 @@ mkdir -p "$cert_dir"
 
 # Generate certificates using vault
 echo -e "${GREEN}Generating certificates...${NC}"
+echo -e "${YELLOW}Executing Vault command:${NC}"
+echo -e "vault write -format=json $PKI_ENGINE/issue/$ROLE_NAME \\"
+echo -e "    common_name=\"$common_name\" \\"
+echo -e "    alt_names=\"$sans\" \\"
+echo -e "    ip_sans=\"$ip_sans\" \\"
+echo -e "    ttl=\"$TTL\""
+
 cert_data=$(vault write -format=json "$PKI_ENGINE/issue/$ROLE_NAME" \
     common_name="$common_name" \
     alt_names="$sans" \
     ip_sans="$ip_sans" \
     ttl="$TTL")
+
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Certificate generation failed${NC}"
+    exit 1
+fi
 
 # Extract and save certificates
 echo "$cert_data" | jq -r '.data.private_key' > "$cert_dir/${short_name}.key"
