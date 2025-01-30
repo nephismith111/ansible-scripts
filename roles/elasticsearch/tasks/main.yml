@@ -197,15 +197,24 @@
         regexp: '^xpack.security.transport.ssl.truststore.path:'
         line: 'xpack.security.transport.ssl.truststore.path: /etc/elasticsearch/certs/transport.p12'
 
-#  # Remove passwords
-#sudo /usr/share/elasticsearch/bin/elasticsearch-keystore remove xpack.security.transport.ssl.keystore.secure_password
-#sudo /usr/share/elasticsearch/bin/elasticsearch-keystore remove xpack.security.transport.ssl.truststore.secure_password
-#sudo /usr/share/elasticsearch/bin/elasticsearch-keystore remove xpack.security.http.ssl.keystore.secure_password
+    - name: Remove old keystore passwords
+      command: /usr/share/elasticsearch/bin/elasticsearch-keystore remove {{ item }}
+      loop:
+        - xpack.security.transport.ssl.keystore.secure_password
+        - xpack.security.transport.ssl.truststore.secure_password
+        - xpack.security.http.ssl.keystore.secure_password
+      ignore_errors: yes  # In case passwords don't exist yet
 
-# Add new passwords
-#  sudo /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.keystore.secure_password
-#  sudo /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.truststore.secure_password
-#  sudo /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.keystore.secure_password
+    - name: Add new keystore passwords
+      expect:
+        command: /usr/share/elasticsearch/bin/elasticsearch-keystore add {{ item }}
+        responses:
+          'Enter value for.*': "{{ elasticsearch_cert_password }}"
+      loop:
+        - xpack.security.transport.ssl.keystore.secure_password
+        - xpack.security.transport.ssl.truststore.secure_password
+        - xpack.security.http.ssl.keystore.secure_password
+      no_log: true  # Don't log password in ansible output
 
   tags:
     - rotate-certs
