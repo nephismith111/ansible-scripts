@@ -155,6 +155,103 @@
   tags:
     - certificates
 
+- name: System CA certificate setup
+  block:
+    - name: Copy CA certificate for system trust
+      copy:
+        src: "{{ inventory_hostname }}/transport-ca.pem"
+        dest: /usr/local/share/ca-certificates/root-ca.crt
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Update system CA certificates
+      command: update-ca-certificates
+  tags:
+    - certificates
+
+- name: Kibana setup tasks
+  block:
+    - name: Install Kibana package
+      apt:
+        name: kibana
+        state: present
+        update_cache: yes
+
+    - name: Create Kibana certificate directory
+      file:
+        path: /etc/kibana/certs
+        state: directory
+        owner: root
+        group: kibana
+        mode: '0750'
+
+    - name: Copy Kibana certificates
+      copy:
+        src: "{{ inventory_hostname }}/{{ item.src }}"
+        dest: "/etc/kibana/certs/{{ item.dest }}"
+        owner: root
+        group: kibana
+        mode: '0640'
+      loop:
+        - { src: 'kibana.key', dest: 'kibana.key' }
+        - { src: 'kibana.pem', dest: 'kibana.pem' }
+        - { src: 'kibana-ca.pem', dest: 'kibana-ca.pem' }
+        - { src: 'transport-ca.pem', dest: 'elasticsearch-ca.pem' }
+
+    - name: Deploy Kibana configuration
+      template:
+        src: kibana.yml.j2
+        dest: /etc/kibana/kibana.yml
+        owner: root
+        group: kibana
+        mode: '0660'
+
+    - name: Generate Kibana encryption keys
+      command: /usr/share/kibana/bin/kibana-encryption-keys generate
+      register: encryption_keys
+      changed_when: false
+
+    - name: Display Kibana encryption keys
+      debug:
+        var: encryption_keys.stdout_lines
+      when: encryption_keys.stdout is defined
+
+    - name: Enable and start Kibana service
+      systemd:
+        name: kibana
+        enabled: yes
+        state: started
+  tags:
+    - kibana
+
+- name: Kibana certificate rotation tasks
+  block:
+    - name: Stop Kibana service
+      systemd:
+        name: kibana
+        state: stopped
+
+    - name: Copy new Kibana certificates
+      copy:
+        src: "{{ inventory_hostname }}/{{ item.src }}"
+        dest: "/etc/kibana/certs/{{ item.dest }}"
+        owner: root
+        group: kibana
+        mode: '0640'
+      loop:
+        - { src: 'kibana.key', dest: 'kibana.key' }
+        - { src: 'kibana.pem', dest: 'kibana.pem' }
+        - { src: 'kibana-ca.pem', dest: 'kibana-ca.pem' }
+        - { src: 'transport-ca.pem', dest: 'elasticsearch-ca.pem' }
+
+    - name: Start Kibana service
+      systemd:
+        name: kibana
+        state: started
+  tags:
+    - rotate-kibana-certs
+
 - name: Certificate rotation tasks
   block:
     - name: Ensure Elasticsearch is stopped before rotating certificates
