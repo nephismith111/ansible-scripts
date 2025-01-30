@@ -112,7 +112,7 @@
 
     - name: Import HTTP CA into keystore
       shell: |
-        keytool -importcert \
+        /usr/share/elasticsearch/jdk/bin/keytool -importcert \
           -noprompt \
           -keystore /tmp/elastic-certs/http.p12 \
           -storepass {{ elasticsearch_cert_password }} \
@@ -134,7 +134,7 @@
 
     - name: Import transport CA into keystore
       shell: |
-        keytool -importcert \
+        /usr/share/elasticsearch/jdk/bin/keytool -importcert \
           -noprompt \
           -keystore /tmp/elastic-certs/transport.p12 \
           -storepass {{ elasticsearch_cert_password }} \
@@ -151,6 +151,17 @@
         owner: root
         group: elasticsearch
 
+
+  tags:
+    - certificates
+
+- name: Certificate rotation tasks
+  block:
+    - name: Ensure Elasticsearch is stopped before rotating certificates
+      systemd:
+        name: elasticsearch
+        state: stopped
+
     - name: Install generated PKCS12 keystores
       copy:
         src: "/tmp/elastic-certs/{{ item }}"
@@ -163,19 +174,10 @@
         - http.p12
         - transport.p12
 
-    - name: Clean up staging directory
-      file:
-        path: /tmp/elastic-certs
-        state: absent
-  tags:
-    - certificates
-
-- name: Certificate rotation tasks
-  block:
-    - name: Ensure Elasticsearch is stopped before rotating certificates
-      systemd:
-        name: elasticsearch
-        state: stopped
+#    - name: Clean up staging directory
+#      file:
+#        path: /tmp/elastic-certs
+#        state: absent
 
     - name: Update HTTP keystore path
       lineinfile:
@@ -194,5 +196,16 @@
         path: /etc/elasticsearch/elasticsearch.yml
         regexp: '^xpack.security.transport.ssl.truststore.path:'
         line: 'xpack.security.transport.ssl.truststore.path: /etc/elasticsearch/certs/transport.p12'
+
+#  # Remove passwords
+#sudo /usr/share/elasticsearch/bin/elasticsearch-keystore remove xpack.security.transport.ssl.keystore.secure_password
+#sudo /usr/share/elasticsearch/bin/elasticsearch-keystore remove xpack.security.transport.ssl.truststore.secure_password
+#sudo /usr/share/elasticsearch/bin/elasticsearch-keystore remove xpack.security.http.ssl.keystore.secure_password
+
+# Add new passwords
+#  sudo /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.keystore.secure_password
+#  sudo /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.truststore.secure_password
+#  sudo /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.keystore.secure_password
+
   tags:
     - rotate-certs
