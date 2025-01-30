@@ -315,3 +315,15 @@
 
   tags:
     - rotate-certs
+
+
+#TASK [elasticsearch : Create HTTP PKCS12 keystore] ***************************************************************************************************
+#ok: [ns-elastic-01]
+#
+#TASK [elasticsearch : Import HTTP CA into keystore] **************************************************************************************************
+#fatal: [ns-elastic-01]: FAILED! => {"changed": true, "cmd": "/usr/share/elasticsearch/jdk/bin/keytool -importcert  -noprompt  -keystore /tmp/elastic-certs/http.p12  -storepass changeme  -alias \"ca\"  -file /tmp/elastic-certs/ca-http.pem\n", "delta": "0:00:00.225613", "end": "2025-01-30 03:51:15.628265", "msg": "non-zero return code", "rc": 1, "start": "2025-01-30 03:51:15.402652", "stderr": "", "stderr_lines": [], "stdout": "keytool error: java.lang.Exception: Certificate not imported, alias <ca> already exists", "stdout_lines": ["keytool error: java.lang.Exception: Certificate not imported, alias <ca> already exists"]}
+#
+#PLAY RECAP *******************************************************************************************************************************************
+#ns-elastic-01              : ok=13   changed=2    unreachable=0    failed=1    skipped=2    rescued=0    ignored=0
+#
+#nsmith@ajftracerv:~/Nephi/repos/ansible-scripts$
