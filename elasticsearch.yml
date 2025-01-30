@@ -1,5 +1,5 @@
 ---
-- name: Install and configure Elasticsearch
+- name: Install and configure Elasticsearch and Kibana
   hosts: elasticsearch
   become: true
   environment:

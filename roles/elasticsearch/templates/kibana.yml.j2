@@ -1,0 +1,33 @@
+server.port: {{ kibana_port | default('5601') }}
+server.host: "{{ ansible_host }}"
+server.publicBaseUrl: "https://{{ ansible_host }}:{{ kibana_port | default('5601') }}"
+server.name: "{{ inventory_hostname }}"
+
+# SSL Configuration
+server.ssl.enabled: true
+server.ssl.certificate: /etc/kibana/certs/kibana.pem
+server.ssl.key: /etc/kibana/certs/kibana.key
+
+# Elasticsearch Connection
+elasticsearch.hosts: ["https://{{ ansible_host }}:{{ elasticsearch_http_port | default('9200') }}"]
+elasticsearch.ssl.certificateAuthorities: [ "/etc/kibana/certs/kibana-ca.pem" ]
+
+# Security Keys
+xpack.encryptedSavedObjects.encryptionKey: {{ kibana_saved_objects_key | default('19662affb002d34155ef72e74a68c104') }}
+xpack.reporting.encryptionKey: {{ kibana_reporting_key | default('ca3e9ace2c4e6dd96e116854405a8571') }}
+xpack.security.encryptionKey: {{ kibana_security_key | default('4eb5a4ac19612d388733deb6d05c0c24') }}
+
+# Logging Configuration
+logging:
+  appenders:
+    file:
+      type: file
+      fileName: /var/log/kibana/kibana.log
+      layout:
+        type: json
+  root:
+    appenders:
+      - default
+      - file
+
+pid.file: /run/kibana/kibana.pid
