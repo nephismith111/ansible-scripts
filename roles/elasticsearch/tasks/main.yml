@@ -117,9 +117,10 @@
           -keystore /tmp/elastic-certs/http.p12 \
           -storepass {{ elasticsearch_cert_password }} \
           -alias "ca" \
-          -file /tmp/elastic-certs/ca-http.pem
-      args:
-        creates: /tmp/elastic-certs/http.p12.imported
+          -file /tmp/elastic-certs/ca-http.pem || true
+      register: http_ca_import
+      changed_when: "'Certificate was added to keystore' in http_ca_import.stdout"
+      failed_when: false
 
     - name: Create transport PKCS12 keystore
       shell: |
@@ -139,9 +140,10 @@
           -keystore /tmp/elastic-certs/transport.p12 \
           -storepass {{ elasticsearch_cert_password }} \
           -alias "ca" \
-          -file /tmp/elastic-certs/ca-transport.pem
-      args:
-        creates: /tmp/elastic-certs/transport.p12.imported
+          -file /tmp/elastic-certs/ca-transport.pem || true
+      register: transport_ca_import
+      changed_when: "'Certificate was added to keystore' in transport_ca_import.stdout"
+      failed_when: false
 
     - name: Ensure certificate directory exists
       file:
