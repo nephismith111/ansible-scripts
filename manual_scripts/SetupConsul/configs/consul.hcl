@@ -18,10 +18,7 @@ bind_addr = "0.0.0.0" # Listen on all IPv4
 # Advertise addr - if you want to point clients to a different address than bind or LB.
 advertise_addr = "192.168.86.21"
 bootstrap_expect=1
-
-# I know that putting the actual key into version control is not following security protocol, but this is for a home setup and I want experience rotating this while retaining availability.
 encrypt = "PiGq3RVVWNbXTle7DH8L5iZel2SHMkbswyTd08dqALs="
-
 #retry_join = ["consul.domain.internal"]
 retry_join = ["192.168.86.21"]
 #retry_join = ["[::1]:8301"]

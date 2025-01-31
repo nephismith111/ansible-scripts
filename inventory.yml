@@ -6,6 +6,7 @@ all:
         elasticsearch_cluster_name: "ns-elastic-cluster"
         elasticsearch_http_port: "9200"
         elasticsearch_cert_password: changeme
+        elastic_user: ggAWJ6VH+eiT8JR+muG8
         
         # Discovery configuration
         elasticsearch_seed_hosts: ["ns-elastic-01", "ns-elastic-02", "ns-elastic-03"]

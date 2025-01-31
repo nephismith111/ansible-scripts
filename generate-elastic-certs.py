@@ -97,7 +97,7 @@ def main():
         short_name = input(
             f"{YELLOW}Enter a short name for the certificate type (http or transport):{NC}\n> "
         ).strip()
-        if short_name in ("http", "transport"):
+        if short_name in ("http", "transport", "kibana"):
             break
         print(f"{RED}Short name must be either 'http' or 'transport'{NC}")
 
