@@ -7,7 +7,8 @@ all:
         elasticsearch_http_port: "9200"
         elasticsearch_cert_password: changeme
         elastic_user: ggAWJ6VH+eiT8JR+muG8
-        
+        kibana_system_user: kibana-system-password
+
         # Discovery configuration
         elasticsearch_seed_hosts: ["ns-elastic-01", "ns-elastic-02", "ns-elastic-03"]
         elasticsearch_initial_masters: ["ns-elastic-01"]
