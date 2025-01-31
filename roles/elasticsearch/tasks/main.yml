@@ -1,5 +1,7 @@
 ---
-# tasks file for elasticsearch
+# =============================================
+# Elasticsearch Installation and Configuration
+# =============================================
 
 - name: Installation tasks
   block:
@@ -172,6 +174,32 @@
   tags:
     - certificates
 
+- name: Create Kibana system user
+  uri:
+    url: "https://localhost:9200/_security/user/{{ kibana_system_user }}"
+    method: POST
+    user: "{{ elastic_user }}"
+    password: "{{ elastic_user_password }}"
+    force_basic_auth: yes
+    body_format: json
+    body:
+      password: "{{ kibana_system_user_password }}"
+      roles: ["kibana_system"]
+      full_name: "Kibana System User"
+      email: "kibana_system@local"
+    validate_certs: no
+    status_code: [200, 201]
+  register: kibana_user_result
+  until: kibana_user_result is success
+  retries: 6
+  delay: 10
+  tags:
+    - elasticsearch-setup
+
+# =============================================
+# Kibana Installation and Configuration
+# =============================================
+
 - name: Kibana setup tasks
   block:
     - name: Install Kibana package
@@ -253,6 +281,10 @@
         state: started
   tags:
     - rotate-kibana-certs
+
+# =============================================
+# Certificate Rotation Tasks
+# =============================================
 
 - name: Certificate rotation tasks
   block:
