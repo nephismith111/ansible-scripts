@@ -82,3 +82,11 @@ sudo /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http
 # Setup kibana
 /usr/share/kibana/bin/kibana-encryption-keys generate    # generate encryption keys
 
+
+
+curl -X POST -u "elastic:ggAWJ6VH+eiT8JR+muG8" "https://localhost:9200/_security/user/kibana_system_user" -H "Content-Type: application/json" -d '{
+  "password": "kibana-system-password",
+  "roles": ["kibana_system"],
+  "full_name": "Kibana System User",
+  "email": "kibana_system@local"
+}'

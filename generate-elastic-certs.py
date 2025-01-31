@@ -97,9 +97,9 @@ def main():
         short_name = input(
             f"{YELLOW}Enter a short name for the certificate type (http or transport):{NC}\n> "
         ).strip()
-        if short_name in ("http", "transport", "kibana"):
+        if short_name:  # in ("http", "transport", "kibana"):
             break
-        print(f"{RED}Short name must be either 'http' or 'transport'{NC}")
+        # print(f"{RED}Short name must be either 'http' or 'transport'{NC}")
 
     # 4. Collect IP SANs
     ip_sans = read_multiline(
