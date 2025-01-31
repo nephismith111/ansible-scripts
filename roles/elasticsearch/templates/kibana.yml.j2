@@ -11,6 +11,8 @@ server.ssl.key: /etc/kibana/certs/kibana.key
 # Elasticsearch Connection
 elasticsearch.hosts: ["https://{{ ansible_host }}:{{ elasticsearch_http_port | default('9200') }}"]
 elasticsearch.ssl.certificateAuthorities: [ "/etc/kibana/certs/kibana-ca.pem" ]
+elasticsearch.username: "kibana_system"
+elasticsearch.password: "{{ kibana_system_user }}"
 
 # Security Keys
 xpack.encryptedSavedObjects.encryptionKey: {{ kibana_saved_objects_key | default('19662affb002d34155ef72e74a68c104') }}

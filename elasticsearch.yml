@@ -4,6 +4,8 @@
   become: true
   environment:
     ANSIBLE_DEBUG: "1"
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
   roles:
     - elasticsearch
 
