@@ -154,10 +154,78 @@
         mode: '0750'
         owner: root
         group: elasticsearch
-
-
   tags:
     - certificates
+
+- name: Certificate rotation tasks
+  block:
+    - name: Ensure Elasticsearch is stopped before rotating certificates
+      systemd:
+        name: elasticsearch
+        state: stopped
+
+    - name: Install generated PKCS12 keystores
+      copy:
+        src: "/tmp/elastic-certs/{{ item }}"
+        dest: "/etc/elasticsearch/certs/{{ item }}"
+        remote_src: yes
+        owner: root
+        group: elasticsearch
+        mode: '0640'
+      loop:
+        - http.p12
+        - transport.p12
+
+    #    - name: Clean up staging directory
+    #      file:
+    #        path: /tmp/elastic-certs
+    #        state: absent
+
+    - name: Update HTTP keystore path
+      lineinfile:
+        path: /etc/elasticsearch/elasticsearch.yml
+        regexp: '^xpack.security.http.ssl.keystore.path:'
+        line: 'xpack.security.http.ssl.keystore.path: /etc/elasticsearch/certs/http.p12'
+
+    - name: Update transport keystore path
+      lineinfile:
+        path: /etc/elasticsearch/elasticsearch.yml
+        regexp: '^xpack.security.transport.ssl.keystore.path:'
+        line: 'xpack.security.transport.ssl.keystore.path: /etc/elasticsearch/certs/transport.p12'
+
+    - name: Update transport truststore path
+      lineinfile:
+        path: /etc/elasticsearch/elasticsearch.yml
+        regexp: '^xpack.security.transport.ssl.truststore.path:'
+        line: 'xpack.security.transport.ssl.truststore.path: /etc/elasticsearch/certs/transport.p12'
+
+    - name: Remove old keystore passwords
+      command: /usr/share/elasticsearch/bin/elasticsearch-keystore remove {{ item }}
+      loop:
+        - xpack.security.transport.ssl.keystore.secure_password
+        - xpack.security.transport.ssl.truststore.secure_password
+        - xpack.security.http.ssl.keystore.secure_password
+      ignore_errors: yes  # In case passwords don't exist yet
+
+    - name: Add new keystore passwords
+      expect:
+        command: /usr/share/elasticsearch/bin/elasticsearch-keystore add {{ item }}
+        responses:
+          'Enter value for.*': "{{ elasticsearch_cert_password }}"
+      loop:
+        - xpack.security.transport.ssl.keystore.secure_password
+        - xpack.security.transport.ssl.truststore.secure_password
+        - xpack.security.http.ssl.keystore.secure_password
+      no_log: true  # Don't log password in ansible output
+
+  tags:
+    - rotate-certs
+
+- name: Enable Elasticsearch
+  systemd:
+    name: elasticsearch
+    enabled: yes
+    state: started
 
 - name: System CA certificate setup
   block:
@@ -173,6 +241,7 @@
       command: update-ca-certificates
   tags:
     - certificates
+
 
 - name: Create Kibana system user
   uri:
@@ -247,11 +316,6 @@
         var: encryption_keys.stdout_lines
       when: encryption_keys.stdout is defined
 
-    - name: Enable and start Kibana service
-      systemd:
-        name: kibana
-        enabled: yes
-        state: started
   tags:
     - kibana
 
@@ -275,89 +339,11 @@
         - { src: 'kibana-ca.pem', dest: 'kibana-ca.pem' }
         - { src: 'transport-ca.pem', dest: 'elasticsearch-ca.pem' }
 
-    - name: Start Kibana service
+    - name: Enable and start Kibana service
       systemd:
         name: kibana
+        enabled: yes
         state: started
   tags:
     - rotate-kibana-certs
 
-# =============================================
-# Certificate Rotation Tasks
-# =============================================
-
-- name: Certificate rotation tasks
-  block:
-    - name: Ensure Elasticsearch is stopped before rotating certificates
-      systemd:
-        name: elasticsearch
-        state: stopped
-
-    - name: Install generated PKCS12 keystores
-      copy:
-        src: "/tmp/elastic-certs/{{ item }}"
-        dest: "/etc/elasticsearch/certs/{{ item }}"
-        remote_src: yes
-        owner: root
-        group: elasticsearch
-        mode: '0640'
-      loop:
-        - http.p12
-        - transport.p12
-
-#    - name: Clean up staging directory
-#      file:
-#        path: /tmp/elastic-certs
-#        state: absent
-
-    - name: Update HTTP keystore path
-      lineinfile:
-        path: /etc/elasticsearch/elasticsearch.yml
-        regexp: '^xpack.security.http.ssl.keystore.path:'
-        line: 'xpack.security.http.ssl.keystore.path: /etc/elasticsearch/certs/http.p12'
-
-    - name: Update transport keystore path
-      lineinfile:
-        path: /etc/elasticsearch/elasticsearch.yml
-        regexp: '^xpack.security.transport.ssl.keystore.path:'
-        line: 'xpack.security.transport.ssl.keystore.path: /etc/elasticsearch/certs/transport.p12'
-
-    - name: Update transport truststore path
-      lineinfile:
-        path: /etc/elasticsearch/elasticsearch.yml
-        regexp: '^xpack.security.transport.ssl.truststore.path:'
-        line: 'xpack.security.transport.ssl.truststore.path: /etc/elasticsearch/certs/transport.p12'
-
-    - name: Remove old keystore passwords
-      command: /usr/share/elasticsearch/bin/elasticsearch-keystore remove {{ item }}
-      loop:
-        - xpack.security.transport.ssl.keystore.secure_password
-        - xpack.security.transport.ssl.truststore.secure_password
-        - xpack.security.http.ssl.keystore.secure_password
-      ignore_errors: yes  # In case passwords don't exist yet
-
-    - name: Add new keystore passwords
-      expect:
-        command: /usr/share/elasticsearch/bin/elasticsearch-keystore add {{ item }}
-        responses:
-          'Enter value for.*': "{{ elasticsearch_cert_password }}"
-      loop:
-        - xpack.security.transport.ssl.keystore.secure_password
-        - xpack.security.transport.ssl.truststore.secure_password
-        - xpack.security.http.ssl.keystore.secure_password
-      no_log: true  # Don't log password in ansible output
-
-  tags:
-    - rotate-certs
-
-
-#TASK [elasticsearch : Create HTTP PKCS12 keystore] ***************************************************************************************************
-#ok: [ns-elastic-01]
-#
-#TASK [elasticsearch : Import HTTP CA into keystore] **************************************************************************************************
-#fatal: [ns-elastic-01]: FAILED! => {"changed": true, "cmd": "/usr/share/elasticsearch/jdk/bin/keytool -importcert  -noprompt  -keystore /tmp/elastic-certs/http.p12  -storepass changeme  -alias \"ca\"  -file /tmp/elastic-certs/ca-http.pem\n", "delta": "0:00:00.225613", "end": "2025-01-30 03:51:15.628265", "msg": "non-zero return code", "rc": 1, "start": "2025-01-30 03:51:15.402652", "stderr": "", "stderr_lines": [], "stdout": "keytool error: java.lang.Exception: Certificate not imported, alias <ca> already exists", "stdout_lines": ["keytool error: java.lang.Exception: Certificate not imported, alias <ca> already exists"]}
-#
-#PLAY RECAP *******************************************************************************************************************************************
-#ns-elastic-01              : ok=13   changed=2    unreachable=0    failed=1    skipped=2    rescued=0    ignored=0
-#
-#nsmith@ajftracerv:~/Nephi/repos/ansible-scripts$
