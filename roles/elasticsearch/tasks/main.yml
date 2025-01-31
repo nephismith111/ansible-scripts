@@ -347,3 +347,32 @@
   tags:
     - rotate-kibana-certs
 
+# =============================================
+# Fleet Installation and Configuration
+# =============================================
+
+- name: Fleet setup tasks
+  block:
+    - name: Create Fleet certificate directory
+      file:
+        path: /etc/fleet/certs
+        state: directory
+        owner: root
+        group: elasticsearch
+        mode: '0750'
+
+    - name: Copy Fleet certificates
+      copy:
+        src: "{{ inventory_hostname }}/{{ item.src }}"
+        dest: "/etc/fleet/certs/{{ item.dest }}"
+        owner: root
+        group: elasticsearch
+        mode: '0640'
+      loop:
+        - { src: 'fleet.key', dest: 'fleet.key' }
+        - { src: 'fleet.pem', dest: 'fleet.pem' }
+        - { src: 'fleet-ca.pem', dest: 'fleet-ca.pem' }
+        - { src: 'transport-ca.pem', dest: 'elastic-ca.pem' }
+  tags:
+    - fleet
+
