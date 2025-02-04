@@ -1,0 +1,7 @@
+unseal_key1: "{{ vault_unseal_key1 }}"
+unseal_key2: "{{ vault_unseal_key2 }}"
+unseal_key3: "{{ vault_unseal_key3 }}"
+unseal_key4: "{{ vault_unseal_key4 }}"
+unseal_key5: "{{ vault_unseal_key5 }}"
+
+initial_root_token: "{{ vault_initial_root_token }}"

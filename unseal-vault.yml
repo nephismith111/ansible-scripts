@@ -7,9 +7,9 @@
     # These would typically be stored securely and provided at runtime
     # Only using 3 of the 5 keys needed for unsealing
     unseal_keys:
-      - "RNuIUM2IM0Lt6wH6Rk+lfdtOCHZZD/1MYEe7TFqfblkY"
-      - "QGj87Zk1NyAmJMMQGPTKAClBbbnw8l3UcRbJZJPxUdEZ"
-      - "crb26BZsoDOKXqnrL7NivQJWb1GdSpzsSjLqpJ1J5XbH"
+      - "{{ unseal_key1 }}"
+      - "{{ unseal_key2 }}"
+      - "{{ unseal_key3 }}"
 
   tasks:
     - name: Unseal Vault with key shares

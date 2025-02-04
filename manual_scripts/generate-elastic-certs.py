@@ -13,7 +13,7 @@ DEFAULT_VAULT_ADDR = os.environ.get("VAULT_ADDR", "https://192.168.86.21:8200")
 PKI_ENGINE = "pki-root-ca"
 ROLE_NAME = "generic"
 TTL = "8760h"  # 1 year
-CERTS_BASE_DIR = "./elastic-certs"
+CERTS_BASE_DIR = "../elastic-certs"
 
 # Simple color codes (optional)
 RED = "\033[0;31m"

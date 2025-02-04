@@ -1,0 +1,19 @@
+# Configurations
+elasticsearch_cluster_name: "ns-elastic-cluster"
+elasticsearch_http_port: "9200"
+
+# Discovery configuration
+elasticsearch_seed_hosts: ["ns-elastic-01", "ns-elastic-02", "ns-elastic-03"]
+elasticsearch_initial_masters: ["ns-elastic-01"]
+
+# Certificate paths (fixed paths, included for documentation)
+elasticsearch_http_keystore_path: "/etc/elasticsearch/certs/http.p12"
+elasticsearch_transport_keystore_path: "/etc/elasticsearch/certs/transport.p12"
+elasticsearch_transport_truststore_path: "/etc/elasticsearch/certs/transport.p12"
+
+# Credentials
+elasticsearch_cert_password: "{{ vault_elasticsearch_cert_password }}"
+elastic_user: "{{ vault_elastic_user }}"
+elastic_user_password: "{{ vault_elastic_user_password }}"
+kibana_system_user: "{{ vault_kibana_system_user }}"
+kibana_system_user_password: "{{ vault_kibana_system_user_password }}"

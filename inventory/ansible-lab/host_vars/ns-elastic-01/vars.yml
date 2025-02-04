@@ -1,0 +1,7 @@
+# Configurations
+test_host_var: "{{ vault_test_host_var }}"
+# Discovery configuration
+
+# Certificate paths (fixed paths, included for documentation)
+
+# Credentials

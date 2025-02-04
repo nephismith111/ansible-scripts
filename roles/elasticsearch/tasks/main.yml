@@ -3,6 +3,18 @@
 # Elasticsearch Installation and Configuration
 # =============================================
 
+#- name: Debug block
+#  block:
+#    - name: Debug group vars 1
+#      debug:
+#        msg: "Admin user for es: {{ elastic_user }}"
+#    - name: Debug Group vars 2
+#      debug:
+#        msg: "Kibana admin is: {{ kibana_system_user }}"
+#    - name: Debug host vars 1
+#      debug:
+#        msg: "mystery var is: {{ test_host_var }}"
+
 - name: Installation tasks
   block:
     - name: Import Elasticsearch GPG key to keyring
